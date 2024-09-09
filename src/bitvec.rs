@@ -53,6 +53,8 @@ impl BitVec<Read> {
         if self.byte_pos >= self.data.len() {
             return None;
         }
+        debug_assert!(len < usize::BITS as u8);
+
         if self.remaining_bits >= len {
             // The rest of the function only needs the adjusted value
             self.remaining_bits -= len;
