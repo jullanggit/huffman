@@ -1,0 +1,172 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Add tag version: "
+        required: true
+        type: string
+
+env:
+  # update with the name of the main binary
+  binary: huffman
+  add_binaries_to_github_release: true
+
+  # Before enabling LFS, please take a look at GitHub's documentation for costs and quota limits:
+  # https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-storage-and-bandwidth-usage
+  use_git_lfs: false
+
+
+jobs:
+
+  # Build for Linux
+  release-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: olegtarasov/get-tag@v2.1.2
+        id: get_version
+      - uses: actions/checkout@v4
+        with:
+          lfs: ${{ env.use_git_lfs }}
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Build
+        run: |
+          cargo build --release --target x86_64-unknown-linux-gnu
+
+      - name: Upload binaries to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          path: target/x86_64-unknown-linux-gnu/release/${{ env.binary }}
+          name: linux
+          retention-days: 1
+
+      - name: Upload binaries to release
+        if: ${{ env.add_binaries_to_github_release == 'true' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/x86_64-unknown-linux-gnu/release/${{ env.binary }}
+          asset_name: ${{ env.binary }}-linux-${{ steps.get_version.outputs.tag }}
+          tag: ${{ github.ref }}
+          overwrite: true
+
+  # Build for Windows
+  release-windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: olegtarasov/get-tag@v2.1.2
+        id: get_version
+      - uses: actions/checkout@v4
+        with:
+          lfs: ${{ env.use_git_lfs }}
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Build
+        run: |
+          cargo build --release --target x86_64-pc-windows-msvc
+
+      - name: Upload binaries to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          path: target/x86_64-pc-windows-msvc/release/${{ env.binary }}.exe
+          name: windows
+          retention-days: 1
+
+      - name: Upload binaries to release
+        if: ${{ env.add_binaries_to_github_release == 'true' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/x86_64-pc-windows-msvc/release/${{ env.binary }}.exe
+          asset_name: ${{ env.binary }}-windows-${{ steps.get_version.outputs.tag }}.exe
+          tag: ${{ github.ref }}
+          overwrite: true
+
+  # Build for MacOS x86_64
+  release-macOS-intel:
+    runs-on: macOS-latest
+
+    steps:
+      - uses: olegtarasov/get-tag@v2.1.2
+        id: get_version
+      - uses: actions/checkout@v4
+        with:
+          lfs: ${{ env.use_git_lfs }}
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: x86_64-apple-darwin
+      - name: Environment Setup
+        run: |
+          export CFLAGS="-fno-stack-check"
+          export MACOSX_DEPLOYMENT_TARGET="10.9"
+
+      - name: Build
+        run: |
+          cargo build --release --target x86_64-apple-darwin
+
+      - name: Upload binaries to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          path: target/x86_64-apple-darwin/release/${{ env.binary }}
+          name: macOS-intel
+          retention-days: 1
+
+      - name: Upload binaries to release
+        if: ${{ env.add_binaries_to_github_release == 'true' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file:  target/x86_64-apple-darwin/release/${{ env.binary }}
+          asset_name: ${{ env.binary }}-macOS-intel-${{ steps.get_version.outputs.tag }}
+          tag: ${{ github.ref }}
+          overwrite: true
+
+  # Build for MacOS Apple Silicon
+  release-macOS-apple-silicon:
+    runs-on: macOS-latest
+
+    steps:
+      - uses: olegtarasov/get-tag@v2.1.2
+        id: get_version
+      - uses: actions/checkout@v4
+        with:
+          lfs: ${{ env.use_git_lfs }}
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: aarch64-apple-darwin
+      - name: Environment 
+        # macOS 11 was the first version to support ARM
+        run: |
+          export MACOSX_DEPLOYMENT_TARGET="11"
+
+      - name: Build
+        run: |
+          cargo build --release --target aarch64-apple-darwin
+
+      - name: Upload binaries to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          path: target/aarch64-apple-darwin/release/${{ env.binary }}
+          name: macOS-apple-silicon
+          retention-days: 1
+
+      - name: Upload binaries to release
+        if: ${{ env.add_binaries_to_github_release == 'true' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/aarch64-apple-darwin/release/${{ env.binary }}
+          asset_name: ${{ env.binary }}-macOS-apple-silicon-${{ steps.get_version.outputs.tag }}
+          tag: ${{ github.ref }}
+          overwrite: true
