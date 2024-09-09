@@ -1,3 +1,5 @@
+use std::fs;
+
 use clap::Parser;
 use clap::Subcommand;
 use decode::decode;
@@ -37,15 +39,18 @@ fn main() {
             input_file,
             output_file,
             orig_symbol_size,
-        } => encode(
-            &input_file,
-            &output_file,
-            orig_symbol_size.unwrap_or(8),
-            true,
-        ),
+        } => {
+            let input_data = fs::read(input_file).unwrap();
+            let output_data = encode(input_data, orig_symbol_size.unwrap_or(8), true);
+            fs::write(output_file, output_data).unwrap();
+        }
         Commands::Decode {
             input_file,
             output_file,
-        } => decode(&input_file, &output_file),
+        } => {
+            let input_data = fs::read(input_file).unwrap();
+            let output_data = decode(input_data);
+            fs::write(output_file, output_data).unwrap();
+        }
     }
 }

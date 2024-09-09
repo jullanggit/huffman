@@ -8,7 +8,7 @@ pub struct Write;
 
 #[derive(Debug)]
 pub struct BitVec<T> {
-    pub data: Vec<u8>,
+    data: Vec<u8>,
     remaining_bits: u8,
     byte_pos: usize,
     _type: PhantomData<T>,
@@ -31,10 +31,19 @@ impl<T> BitVec<T> {
         self.byte_pos = 0;
         self.remaining_bits = 8;
     }
+    pub fn data(self) -> Vec<u8> {
+        self.data
+    }
 }
 impl BitVec<Read> {
     pub fn from_file(file: &str) -> Self {
         let data = fs::read(file).unwrap();
+        Self {
+            data,
+            ..Default::default()
+        }
+    }
+    pub fn from_data(data: Vec<u8>) -> Self {
         Self {
             data,
             ..Default::default()

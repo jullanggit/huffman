@@ -1,10 +1,14 @@
-use std::{collections::HashMap, fs};
+use std::collections::HashMap;
 
 use crate::bitvec::BitVec;
 
 #[expect(clippy::cast_possible_truncation)]
-pub fn decode(input_file: &str, output_file: &str) {
-    let mut input_data = BitVec::from_file(input_file);
+pub fn decode(input_data: Vec<u8>) -> Vec<u8> {
+    if input_data.is_empty() {
+        return input_data;
+    }
+
+    let mut input_data = BitVec::from_data(input_data);
 
     let num_symbols_size = input_data.read(5).unwrap() as u8;
     let num_symbols = input_data.read(num_symbols_size).unwrap();
@@ -46,5 +50,5 @@ pub fn decode(input_file: &str, output_file: &str) {
             }
         }
     }
-    fs::write(output_file, output_data.data).unwrap();
+    output_data.data()
 }

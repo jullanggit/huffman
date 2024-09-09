@@ -14,15 +14,8 @@ libfuzzer-sys = "0.4"
 path = ".."
 
 [[bin]]
-name = "fuzz_target_1"
-path = "fuzz_targets/fuzz_target_1.rs"
-test = false
-doc = false
-bench = false
-
-[[bin]]
-name = "x86_64-unknown-linux-gnu"
-path = "fuzz_targets/x86_64-unknown-linux-gnu.rs"
+name = "coding"
+path = "fuzz_targets/coding.rs"
 test = false
 doc = false
 bench = false

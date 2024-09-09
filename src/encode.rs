@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs};
+use std::collections::HashMap;
 
 use crate::bitvec::{BitVec, Read, Write};
 
@@ -24,8 +24,12 @@ impl Node {
     }
 }
 
-pub fn encode(input_file: &str, output_file: &str, orig_symbol_size: u8, print: bool) {
-    let mut input_data = BitVec::from_file(input_file);
+pub fn encode(input_data: Vec<u8>, orig_symbol_size: u8, print: bool) -> Vec<u8> {
+    if input_data.is_empty() {
+        return input_data;
+    }
+
+    let mut input_data = BitVec::from_data(input_data);
 
     let (symbol_nodes, num_symbols) = get_symbol_nodes(&mut input_data, orig_symbol_size);
     let huffman_root = construct_huffman_tree(symbol_nodes);
@@ -70,7 +74,7 @@ pub fn encode(input_file: &str, output_file: &str, orig_symbol_size: u8, print: 
         let header_len = output_data.bits();
         let data_len = output_data.bits() - header_len;
 
-        println!("Original len: {}b", input_data.data.len() * 8);
+        println!("Original len: {}b", input_data.bits());
         println!(
             "Compressed len: {}b (header: {}b, data: {}b)",
             output_data.bits(),
@@ -78,8 +82,7 @@ pub fn encode(input_file: &str, output_file: &str, orig_symbol_size: u8, print: 
             data_len
         );
     }
-
-    fs::write(output_file, output_data.data).unwrap();
+    output_data.data()
 }
 
 /// Returns a Node for each unique symbol in the original message, containing its frequency, and
