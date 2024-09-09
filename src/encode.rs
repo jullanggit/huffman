@@ -62,6 +62,8 @@ pub fn encode(input_data: Vec<u8>, orig_symbol_size: u8, print: bool) -> Vec<u8>
     // Write delimiter
     output_data.write(0, encoded_symbol_size_size as u8);
 
+    let header_len = output_data.bits();
+
     input_data.reset();
 
     // Write data
@@ -71,7 +73,6 @@ pub fn encode(input_data: Vec<u8>, orig_symbol_size: u8, print: bool) -> Vec<u8>
     }
 
     if print {
-        let header_len = output_data.bits();
         let data_len = output_data.bits() - header_len;
 
         println!("Original len: {}b", input_data.bits());
