@@ -13,7 +13,7 @@ mod decode;
 mod encode;
 
 #[derive(Parser, Debug)]
-#[command(name = "files")]
+#[command(name = "huffman")]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
