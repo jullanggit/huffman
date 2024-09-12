@@ -11,6 +11,7 @@ use encode::encode;
 mod bitvec;
 mod decode;
 mod encode;
+mod traits;
 
 #[derive(Parser, Debug)]
 #[command(name = "huffman")]
