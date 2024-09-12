@@ -130,9 +130,8 @@ fn construct_huffman_tree(mut nodes: Vec<Node>) -> Node {
 
         // Get the right index (so the vec remains sorted)
         let index = nodes
-            .iter()
-            .position(|vec_node| new_node.freq >= vec_node.freq)
-            .unwrap_or(nodes.len());
+            .binary_search_by_key(&new_node.freq, |node| node.freq)
+            .unwrap_or_else(|e| e);
         // Insert the new node
         nodes.insert(index, new_node);
     }
