@@ -55,12 +55,12 @@ pub fn encode(input_data: Vec<u8>, orig_symbol_size: u8, print: bool) -> Vec<u8>
     for (original_symbol, &(encoded_symbol, encoded_symbol_len)) in &map {
         debug_assert!(encoded_symbol_len != 0);
 
-        output_data.write(encoded_symbol_len.into(), encoded_symbol_size_size as u8);
+        output_data.write(encoded_symbol_len, encoded_symbol_size_size as u8);
         output_data.write(*original_symbol, orig_symbol_size);
         output_data.write(encoded_symbol, encoded_symbol_len);
     }
     // Write delimiter
-    output_data.write(0, encoded_symbol_size_size as u8);
+    output_data.write(0_u8, encoded_symbol_size_size as u8);
 
     let header_len = output_data.bits();
 
@@ -153,7 +153,7 @@ fn write_header(
     data.write(num_symbols, num_symbols_size as u8);
 
     // Size of the original symbols
-    data.write(orig_symbol_size.into(), 4);
+    data.write(orig_symbol_size, 4);
 
     // Size of the longest encoded symbol
     data.write(encoded_symbol_size_size, 5);

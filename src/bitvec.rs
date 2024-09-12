@@ -1,5 +1,8 @@
 use std::fs;
 use std::marker::PhantomData;
+use std::ops::{BitAnd, Shl, Shr, Sub};
+
+use crate::traits::One;
 
 #[derive(Debug)]
 pub struct Read;
@@ -95,8 +98,16 @@ impl BitVec<Read> {
     }
 }
 impl BitVec<Write> {
-    #[expect(clippy::cast_possible_truncation)]
-    pub fn write(&mut self, data: usize, len: u8) {
+    pub fn write<D>(&mut self, data: D, len: u8)
+    where
+        D: Shl<u8, Output = D>
+            + Shr<u8, Output = D>
+            + BitAnd<Output = D>
+            + TryInto<u8>
+            + One
+            + Sub<Output = D>
+            + Copy,
+    {
         if self.remaining_bits >= len {
             // The rest of the function only needs the adjusted value
             self.remaining_bits -= len;
@@ -105,7 +116,10 @@ impl BitVec<Write> {
             let positioned_data = data << self.remaining_bits;
 
             // Add (OR) the positioned data to the current byte
-            self.data[self.byte_pos] |= positioned_data as u8;
+            self.data[self.byte_pos] |= match positioned_data.try_into() {
+                Ok(num) => num,
+                Err(_) => panic!("Could not convert to u8"),
+            };
         } else {
             // The amount of bits to write outside the current byte
             let remaining_len = len - self.remaining_bits;
@@ -114,12 +128,15 @@ impl BitVec<Write> {
             let positioned_data = data >> remaining_len;
 
             // Add (OR) the positioned data to the current byte
-            self.data[self.byte_pos] |= positioned_data as u8;
+            self.data[self.byte_pos] |= match positioned_data.try_into() {
+                Ok(num) => num,
+                Err(_) => panic!("Could not convert to u8"),
+            };
 
             self.next_byte();
 
             // Construct a bitmask and zero already written bits
-            let remaining_data_mask = (1 << remaining_len) - 1;
+            let remaining_data_mask = (D::one() << remaining_len) - D::one();
             let remaining_data = data & remaining_data_mask;
 
             // Recursively write the rest of the data
