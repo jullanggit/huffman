@@ -3,4 +3,5 @@ Cargo.lock
 input
 output
 decoded
+huff
 analysis a
