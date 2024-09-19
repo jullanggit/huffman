@@ -14,8 +14,8 @@ impl Node {
         match self.children {
             Some(ref boxed_nodes) => {
                 let nodes = boxed_nodes;
-                nodes[0].get_map(values, cur_value * 2, cur_len + 1);
-                nodes[1].get_map(values, cur_value * 2 + 1, cur_len + 1);
+                nodes[0].get_map(values, cur_value << 1, cur_len + 1);
+                nodes[1].get_map(values, (cur_value << 1) | 1, cur_len + 1);
             }
             None => {
                 values.insert(self.message.unwrap(), (cur_value, cur_len));
