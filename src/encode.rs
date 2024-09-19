@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Debug};
 
 use crate::bitvec::{BitVec, Read, Write};
 
@@ -86,8 +86,8 @@ pub fn encode(input_data: Vec<u8>, orig_symbol_size: u8, print: bool) -> Vec<u8>
     output_data.data()
 }
 
-/// Returns a Node for each unique symbol in the original message, containing its frequency, and
-/// the amount of symbols in the message
+/// Returns (a Node for each unique symbol in the original message, containing its frequency,
+/// amount of symbols in the message)
 fn get_symbol_nodes(message: &mut BitVec<Read>, symbol_len: u8) -> (Vec<Node>, usize) {
     let mut freqs = HashMap::new();
 
@@ -117,6 +117,8 @@ fn construct_huffman_tree(mut nodes: Vec<Node>) -> Node {
     // Sort from biggest to smallest
     nodes.sort_unstable_by(|a, b| b.freq.cmp(&a.freq));
     while nodes.len() > 1 {
+        debug_assert!(nodes.is_sorted_by(|a, b| a.freq >= b.freq));
+
         // Get the two smallest nodes
         let a = nodes.pop().unwrap();
         let b = nodes.pop().unwrap();
@@ -130,7 +132,7 @@ fn construct_huffman_tree(mut nodes: Vec<Node>) -> Node {
 
         // Get the right index (so the vec remains sorted)
         let index = nodes
-            .binary_search_by_key(&new_node.freq, |node| node.freq)
+            .binary_search_by(|node| new_node.freq.cmp(&node.freq))
             .unwrap_or_else(|e| e);
         // Insert the new node
         nodes.insert(index, new_node);
