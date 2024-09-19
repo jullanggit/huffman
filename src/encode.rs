@@ -4,7 +4,7 @@ use crate::bitvec::{BitVec, Read, Write};
 
 #[derive(Debug, Clone)]
 struct Node {
-    freq: u16,
+    freq: u32,
     message: Option<usize>,
     children: Option<Box<[Node; 2]>>,
 }
